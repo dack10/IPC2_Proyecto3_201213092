@@ -1,0 +1,22 @@
+.foto{
+
+padding: auto;
+
+}
+
+body{
+
+    background-color: black;
+}
+
+p, h3{
+    font-size: 30px;
+    font-style: italic;
+    color: blanchedalmond;
+}
+
+.list-group-item{
+    display: block;
+}
+
+
