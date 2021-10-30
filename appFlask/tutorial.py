@@ -9,7 +9,7 @@ CORS(app)
 
 @app.route("/") #Esto va antes de la funcion
 def index(): #creamos una funcion
-    return "Hola,mundo"
+    return "Hola,mundo 3"
 
 #DEBEMOS DE CREAR UNA RUTA YA QUE ESTE ES EL SERVIDOR Y ASI SABEMOS A DONDE 
 #SE TIENE QUE REDIRIGIR

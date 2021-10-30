@@ -68,7 +68,11 @@
       
       <input type="file" id="archivoTexto">
       <hr>
-      <textarea id="contenido" cols="30" rows="10" name="entrada" ></textarea>
+      <label for="">ENTRADA</label>
+      
+      <textarea id="contenido" type="submit" cols="30" rows="10" name="entrada" readonly="readonly" style="resize: both;" method="POST"></textarea>
+      <label for="">SALIDA</label>
+      <textarea id="contenido2" cols="30" rows="10" name="salida" readonly="readonly" style="resize: both;"></textarea>
       <p id="mensajes"> </p>
      <script>
        function abrirArchivo(evento){

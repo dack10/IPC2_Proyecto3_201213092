@@ -30,6 +30,7 @@ def login(request):
             'password': request.POST['contrasena']
         }
         r= requests.post(url+'procesar',json=algo,verify=True)
+
         print(r.text)
     return render(request,'app/login.html')
 
@@ -50,4 +51,10 @@ def leer(request):
 def cargar(request):
     r= requests.post(url2+'cargar')
     archivo = filedialog.askopenfilename(title="abrir")
+    r= request.POST['entrada']
+    print(r)
+
+def prueba(request):
+    print(request.POST['entrada'])
+    return render(request,'app/index.html')
     
