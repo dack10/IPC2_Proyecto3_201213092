@@ -4,8 +4,7 @@ from .views import DatosE, cargar, inicio, inicio3, leer, login,inicio2, registr
 urlpatterns = [
     path('',inicio),
     path('login',login),
-    path('inicio',inicio2),
-    path('prueba',prueba),
+    path('inicio',prueba),
     path('index.html',inicio3),
     path('DatosE.html',DatosE),
     path('cargar',cargar),

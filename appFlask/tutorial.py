@@ -1,5 +1,7 @@
 from flask import Flask,request
 from flask_cors import CORS
+import requests
+import xml.etree.ElementTree as xml
 
 app = Flask(__name__) 
 #CREAMOS UNA INSTANCIA DE ESTA CLASE EL ARGUMENTO QUE SE LE PASA ES NAME POR QUE LA APP 
@@ -24,6 +26,14 @@ def procesar():
     datos2 = request.json['name']
     
     return algo
+
+@app.route("/proceso", methods=['POST'])
+def proceso():    
+    texto = request.data.decode('utf-8')
+    print(texto)
+    file=open("prueba.xml",'w')
+    file.write(texto)
+    
 
 @app.route("/registro",methods=['POST'])
 def registro():

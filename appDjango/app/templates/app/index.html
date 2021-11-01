@@ -63,16 +63,31 @@
           </div>
         </div>
       </nav>
-      <button type="button" class="btn btn-primary" id="boton">ENVIAR</button>
-      <button type="button" class="btn btn-danger" id="boton">RESETEAR</button>
-      
+      <form action="" method="POST">
+        {% csrf_token%} 
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-sm-4">
+                <div class="card" style="background-color: green;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="text-align: center;">INGRESO DE ARCHIVO Y SALIDA</h5>
+                        <div class="mb-3">
+                            <label for="exampleFormControlInput1" class="form-label">ENTRADA</label>
+                            <textarea id="contenido" type="submit" cols="30" rows="10" name="entrada" readonly="readonly" style="resize: both;" method="POST"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleFormControlTextarea1" class="form-label">SALIDA</label>
+                            <textarea id="contenido2" cols="30" rows="10" name="salida" readonly="readonly" style="resize: both;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-info">ENVIAR</button>
+                        <button type="button" class="btn btn-danger" id="boton">RESETEAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
       <input type="file" id="archivoTexto">
       <hr>
-      <label for="">ENTRADA</label>
-      
-      <textarea id="contenido" type="submit" cols="30" rows="10" name="entrada" readonly="readonly" style="resize: both;" method="POST"></textarea>
-      <label for="">SALIDA</label>
-      <textarea id="contenido2" cols="30" rows="10" name="salida" readonly="readonly" style="resize: both;"></textarea>
       <p id="mensajes"> </p>
      <script>
        function abrirArchivo(evento){
