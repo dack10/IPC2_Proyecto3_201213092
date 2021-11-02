@@ -44,6 +44,7 @@ def proceso():
     root1=xmll.getroot()
     root2=xml2.getroot()
     contador=0
+    errorNitEmisor=0
     for dte in root1.findall('DTE'):
         for tiempo in dte.findall('TIEMPO'):
             fecha=tiempo.text
@@ -86,11 +87,38 @@ def proceso():
                 fecha.text=str(exp)
                 facturas=xml.SubElement(autorizaciones,'FACTURAS_RECIBIDAS')
                 facturas.text=str(contador)
+                errores=xml.SubElement(autorizaciones,'ERRORES')
+                emisor=xml.SubElement(errores,'NIT_EMISOR')
+                nitEmisor= dte.find('NIT_EMISOR').text
+                print(str(nitEmisor))
+                longitud=len(nitEmisor)
+                expresionNitEmisor=re.search(r"[0-9]+",str(nitEmisor))
+                tieneLetras=re.search(r"\D+",str(nitEmisor))
+                print(tieneLetras.group())
+                for num in range(1,3):
+                    if num==1:
+                        for emi in root1.findall('DTE'):
+                            for emi2 in emi.findall("NIT_EMISOR"):
+                                dteee=emi2.text
+                                longitud=len(dteee)
+                                expresionNitEmisor=re.search(r"[0-9]+",str(dteee))
+                                tieneLetras=re.search(r"\D+",str(dteee))
+                                if len(expresionNitEmisor.group())>20 or len(tieneLetras.group())>0:
+                                    errorNitEmisor=errorNitEmisor+1
+                        errorn=xml.SubElement(errores,'NIT_EMISOR')
+                        errorn.text=str(errorNitEmisor)
+                errorNitEmisor=0        
+
+                receptor=xml.SubElement(errores,'NIT_RECEPTOR')
+                iva=xml.SubElement(errores,'IVA')
+                total=xml.SubElement(errores,'TOTAL')
+                duplicada=xml.SubElement(errores,'REFERENCIA_DUPLICADA')
                 print(str(contador))
                 contador=0
             exp2=exp
+
                   
-    
+    print("error "+str(errorNitEmisor))
     myraiz=xml.ElementTree(raiz)
     myraiz.write('autorizaciones.xml')
     file=open('autorizaciones.xml')
