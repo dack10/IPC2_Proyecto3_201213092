@@ -45,7 +45,7 @@ def proceso():
     root2=xml2.getroot()
     contador=0
     errorNitEmisor=0
-    for dte in root1.findall('DTE'):
+    """for dte in root1.findall('DTE'):
         for tiempo in dte.findall('TIEMPO'):
             fecha=tiempo.text
             expresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fecha))
@@ -60,7 +60,7 @@ def proceso():
                     if expresion3==exp:
                         contador=contador+1
         print(contador)
-        contador=0  
+        contador=0"""  
     
     raiz=xml.Element('LISTAAUTORIZACIONES')
     #for num in range(0,3):
@@ -87,8 +87,9 @@ def proceso():
                 fecha.text=str(exp)
                 facturas=xml.SubElement(autorizaciones,'FACTURAS_RECIBIDAS')
                 facturas.text=str(contador)
-                errores=xml.SubElement(autorizaciones,'ERRORES')
-                emisor=xml.SubElement(errores,'NIT_EMISOR')
+
+                errores=xml.SubElement(autorizaciones,'ERRORES')#creacion de etiqueta errores
+                emisor=xml.SubElement(errores,'NIT_EMISOR')#creacion de etiqueta nit emisor dentro de errores
                 nitEmisor= dte.find('NIT_EMISOR').text
                 print(str(nitEmisor))
                 longitud=len(nitEmisor)
@@ -107,7 +108,7 @@ def proceso():
                                     errorNitEmisor=errorNitEmisor+1
                         errorn=xml.SubElement(errores,'NIT_EMISOR')
                         errorn.text=str(errorNitEmisor)
-                errorNitEmisor=0        
+                errorNitEmisor=0       
 
                 receptor=xml.SubElement(errores,'NIT_RECEPTOR')
                 iva=xml.SubElement(errores,'IVA')
@@ -116,7 +117,18 @@ def proceso():
                 print(str(contador))
                 contador=0
             exp2=exp
-
+    errores=xml.SubElement(autorizaciones,'ERRORES')
+    for emi in root1.findall('DTE'):
+        for emi2 in emi.findall("NIT_EMISOR"):
+            dteee=emi2.text
+            longitud=len(dteee)
+            expresionNitEmisor=re.search(r"[0-9]+",str(dteee))
+            tieneLetras=re.search(r"\D+",str(dteee))
+            if len(expresionNitEmisor.group())>20 or len(tieneLetras.group())>0:
+                errorNitEmisor=errorNitEmisor+1
+        errorn=xml.SubElement(errores,'NIT_EMISOR')
+        errorn.text=str(errorNitEmisor)
+    
                   
     print("error "+str(errorNitEmisor))
     myraiz=xml.ElementTree(raiz)
