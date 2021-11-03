@@ -1,12 +1,17 @@
 from enum import auto
 from os import error, path
 from tkinter.filedialog import Open
+from django import http
+from django.http import response as res
+from django.shortcuts import render
 from flask import Flask,request
 from flask_cors import CORS
 from flask_cors.core import serialize_option
 import requests
 import xml.etree.ElementTree as xml
 import re
+
+from werkzeug.wrappers import response
 
 app = Flask(__name__) 
 #CREAMOS UNA INSTANCIA DE ESTA CLASE EL ARGUMENTO QUE SE LE PASA ES NAME POR QUE LA APP 
@@ -31,7 +36,18 @@ def procesar():
     datos2 = request.json['name']
     
     return algo
+@app.route("/envio",methods=['GET'])
+def salida():
+    archivo=open('autorizaciones.xml')
+    xmltexto=archivo.read()
+    print(xmltexto)
+    text={
+        'archivo':xmltexto
+    }
 
+    return text
+    
+    
 @app.route("/proceso", methods=['POST'])
 def proceso():    
     #texto = request.data.decode('utf-8')
@@ -46,6 +62,9 @@ def proceso():
     contador=0
     errorNitEmisor=0
     errorNitReceptor=0
+    errorIva=0
+    errortotal=0
+    errorDuplicada=0
     """for dte in root1.findall('DTE'):
         for tiempo in dte.findall('TIEMPO'):
             fecha=tiempo.text
@@ -158,11 +177,11 @@ def proceso():
                             nit=m.find('NIT_RECEPTOR').text
                             nitSinEspacios=nit.lstrip()
                             nitsinespacios2=nitSinEspacios.rstrip()
-                            print("este es el nit a probar "+str(nitsinespacios2))
+                            #print("este es el nit a probar "+str(nitsinespacios2))
                             longitud=len(nitsinespacios2)#OBTENGO LA LONGITUD DEL NIT
-                            print("la longitud de este nit es "+str(longitud))
+                            #print("la longitud de este nit es "+str(longitud))
                             letras=re.search(r"\D+",str(nitsinespacios2))#ver si tiene letras
-                            print("estas son las letras"+str(letras))
+                            
                             if longitud>20 or letras!=None:
                                 errorNitReceptor=errorNitReceptor+1
                                 
@@ -176,14 +195,106 @@ def proceso():
                 receptor.text=str(errorNitReceptor)          
                 print("cantidad de errores de nit emisor de la fecha "+str(exp)+" " +"es "+str(errorNitReceptor))
                 #---------------------------------------------------------------------------------------------------
-            
                 iva=xml.SubElement(errores,'IVA')
+                #metodo de encontrar errores de IVA
+                for m in root1.findall('DTE'):
+                    for nn in m.findall('TIEMPO'):
+                        fAcomparar=nn.text
+                        fExpresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fAcomparar))
+                        fgroup=fExpresion.group()
+                        if exp==fgroup:
+                            #IVA TEXTO
+                            datoIva=m.find('IVA').text
+                            i=datoIva.strip()
+                            valorD=m.find('VALOR').text
+                            v=valorD.strip()
+                            ii=float(i)
+                            
+                            vv=float(v)
+                            
+                            dato=round(vv*0.12,2)
+                            
+                            if dato==ii:
+                                print("son iguales")
+                            else:
+                                errorIva=errorIva+1
+
+                iva.text=str(errorIva)
+                #-------------------------------------------------------------------------------------------
                 total=xml.SubElement(errores,'TOTAL')
+                #metodo de encontrar errores de total
+                for m in root1.findall('DTE'):
+                    for nn in m.findall('TIEMPO'):
+                        fAcomparar=nn.text
+                        fExpresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fAcomparar))
+                        fgroup=fExpresion.group()
+                        if exp==fgroup:
+                            #IVA TEXTO
+                            datoIva=m.find('TOTAL').text
+                            totall=datoIva.strip()
+                            valorD=m.find('VALOR').text
+                            v=valorD.strip()
+                            i=m.find('IVA').text
+                            ie=i.strip()
+                            ii=float(ie)#iva float
+                            print(ii)
+                            vv=float(v)#valor float
+                            print(vv)
+                            tt=float(totall)#total float
+                            print(tt)
+                            dato=vv+ii
+                            print(dato)
+                            if round(dato,2)==round(tt,2):
+                                print("son iguales los totales")
+                            else:
+                                errortotal=errortotal+1
+
+                total.text=str(errortotal)
+                #-------------------------------------------------------------------------------------------
                 duplicada=xml.SubElement(errores,'REFERENCIA_DUPLICADA')
+                #metodo de encontrar errores de referencia duplicadas
+                """
+                for m in root1.findall('DTE'):
+                    for nn in m.findall('TIEMPO'):
+                        fAcomparar=nn.text
+                        fExpresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fAcomparar))
+                        fgroup=fExpresion.group()
+                        if exp==fgroup:
+                            nit=m.find('REFERENCIA').text
+                            nitSinEspacios=nit.lstrip()
+                            nitsinespacios2=nitSinEspacios.rstrip()
+                            #print("este es el nit a probar "+str(nitsinespacios2))
+                            longitud=len(nitsinespacios2)#OBTENGO LA LONGITUD DEL NIT
+                            #print("la longitud de este nit es "+str(longitud))
+                            letras=re.search(r"\D+",str(nitsinespacios2))#ver si tiene letras
+                            
+                            if longitud>20 or letras!=None:
+                                errorNitReceptor=errorNitReceptor+1
+                                
+                            
+                            expresionNitE=re.findall(r"[0-9]+",str(nit))#obtener solo los numero del nit
+                            eNe=""
+                            for n in range(0,len(expresionNitE)):
+                                t=expresionNitE[n]
+                                eNe=str(eNe)+str(t)
+                            #print(eNe)#IMPRIMO EL NIT EN SOLO NUMEROS
+                       
+                print("cantidad de errores de nit emisor de la fecha "+str(exp)+" " +"es "+str(errorNitReceptor))
+                duplicada.text=str(errorDuplicada)
+                """
+                #-------------------------------------------------------------------------------------------
+                FacCorrectas= xml.SubElement(autorizaciones,'FACTURAS_CORRECTAS')
+                CanEmisores=xml.SubElement(autorizaciones,'CANTIDAD_EMISORES')
+                CanReceptores=xml.SubElement(autorizaciones,'CANTIDAD_RECEPTORES')
+                ListadoAuto=xml.SubElement(autorizaciones,'LISTADO_AUTORIZACIONES')
+                Aprobacion=xml.SubElement(ListadoAuto,'APROBACION')
                 print(str(contador))
                 contador=0
                 errorNitEmisor=0
                 errorNitReceptor=0
+                errorIva=0
+                errortotal=0
+                errorDuplicada=0
                 
             exp2=exp
             

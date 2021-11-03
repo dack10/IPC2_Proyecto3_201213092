@@ -1,5 +1,5 @@
 from django.http.response import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpRequest
 import requests
 
@@ -27,6 +27,15 @@ def inicio3(request):
 def DatosE(request):
     return render(request, 'app/DatosE.html')
 
+def mostrarSalida(request):
+    if request.method=='GET':
+        u=url.format('envio')
+        data=requests.get(u)
+        context={
+            'data':data.text,
+        }
+        print(context)
+        return context
 
 def login(request):
     if request.method == 'POST':

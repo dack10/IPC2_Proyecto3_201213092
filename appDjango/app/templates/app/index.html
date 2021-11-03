@@ -40,7 +40,7 @@
                   PETICIONES
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="#">CONSULTAR DATOS</a></li>
+                  <li><a class="dropdown-item" href="http://127.0.0.1:5000/envio">CONSULTAR DATOS</a></li>
                   <li><a class="dropdown-item" href="#">RESUMEN DE IVA POR RECHA Y NIT</a></li>
                   <li><a class="dropdown-item" href="#">RESUMEN POR RANGO DE FECHAS</a></li>
                   <li><a class="dropdown-item" href="#">GRAFICA</a></li>
@@ -70,14 +70,12 @@
             <div class="col-sm-4">
                 <div class="card" style="background-color: green;">
                     <div class="card-body">
-                        <h5 class="card-title" style="text-align: center;">INGRESO DE ARCHIVO Y SALIDA</h5>
+                        <h5 class="card-title" style="text-align: center;">INGRESO DE ARCHIVO</h5>
                         <div class="mb-3">
                             <label for="exampleFormControlInput1" class="form-label">ENTRADA</label>
                             <textarea id="contenido" type="submit" cols="30" rows="10" name="entrada" readonly="readonly" style="resize: both;" method="POST"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="exampleFormControlTextarea1" class="form-label">SALIDA</label>
-                            <textarea id="contenido2" cols="30" rows="10" name="salida" readonly="readonly" style="resize: both;"></textarea>
                         </div>
                         <button type="submit" class="btn btn-info">ENVIAR</button>
                         <button type="button" class="btn btn-danger" id="boton">RESETEAR</button>
@@ -86,6 +84,25 @@
             </div>
         </div>
     </form>
+    <form action="" method="GET">
+      {% csrf_token%} 
+      <div class="row">
+          <div class="col-4"></div>
+          <div class="col-sm-4">
+              <div class="card" style="background-color: green;">
+                  <div class="card-body">
+                      <div class="mb-3">
+                      </div>
+                      <div class="mb-3">
+                          <label for="exampleFormControlTextarea1" class="form-label">SALIDA</label>
+                          <textarea id="contenido2" cols="30" rows="10" name="salida" readonly="readonly" style="resize: both;"></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-info">CONSULTA DE DATOS</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </form>
       <input type="file" id="archivoTexto">
       <hr>
       <p id="mensajes"> </p>
