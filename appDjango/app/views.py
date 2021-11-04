@@ -2,6 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.http import HttpRequest
 import requests
+import matplotlib.pyplot as plt
 
 from tkinter import filedialog
 import xml.etree.ElementTree as xml
@@ -26,7 +27,25 @@ def inicio3(request):
 
 def DatosE(request):
     return render(request, 'app/DatosE.html')
+def grafica(request):
+    plt.figure(figsize=(10,6))
 
+    x = ["15/01/2021","15/01/2021","15/01/2021"]
+    y=["25,52","256,10","41,25"]
+    x2 = [2016,2017,2018,2019,2020,2021]
+    y2=[40,41,42,43,44,45]
+
+    plt.plot(x,y,marker='o',linestyle='--',color='r')
+    plt.plot(x2,y2,marker='d',linestyle='--',color='r')
+    plt.xlabel('FECHA')
+    plt.ylabel('TOTAL')
+    plt.title('RANGO')
+
+    plt.yticks([45,48,51])
+
+    plt.show()
+   
+    return render(request,'app/index.html')
 def mostrarRango(request):
     if request.method=='GET':
         y=requests.get(url+"resumenrango",verify=True)
