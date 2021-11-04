@@ -119,11 +119,11 @@ def fechas():
 
 @app.route("/proceso", methods=['POST'])
 def proceso():    
-    #texto = request.data.decode('utf-8')
-    #print(texto)
-    #file=open("prueba.xml",'w')
-    #file.write(texto)
-    #file.close()
+    texto = request.data.decode('utf-8')
+    print(texto)
+    file=open("prueba.xml",'w')
+    file.write(texto)
+    file.close()
     xmll=xml.parse('prueba.xml')
     xml2=xml.parse('prueba.xml')
     xml3=xml.parse('prueba.xml')
