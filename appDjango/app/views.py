@@ -1,12 +1,12 @@
 from django.http.response import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.http import HttpRequest
 import requests
 
 from tkinter import filedialog
 import xml.etree.ElementTree as xml
 
-
+from requests.sessions import Request
 # Create your views here.
 url = 'http://localhost:5000/'
 url2 = 'http://localhost:8000/'
@@ -27,15 +27,42 @@ def inicio3(request):
 def DatosE(request):
     return render(request, 'app/DatosE.html')
 
+def mostrarRango(request):
+    if request.method=='GET':
+        y=requests.get(url+"resumenrango",verify=True)
+        con={
+            'data':y.text
+        }
+        print(con)
+    return render(request,"app/index.html",con)
+
+def mostrarFechas(request):
+    if request.method=='GET':
+        o=requests.get(url+"fechas",verify=True)
+        texto=o.text
+        dataa={
+            'fecha':texto
+        }
+        print(dataa)
+    return render(request,'app/index.html',dataa)
+
 def mostrarSalida(request):
     if request.method=='GET':
-        u=url.format('envio')
-        data=requests.get(u)
-        context={
-            'data':data.text,
+        u=requests.get(url+'inicio/envio',verify=True)
+        kek=u.text
+        print(u.text)
+        archivo=open('C:/Users/DIEGO CULAJAY/OneDrive/Escritorio/Proyecto3/appFlask/auto.xml')
+        s=archivo.read()
+        archivo.close()
+        
+        data={
+            "mensaje":s,
+            'prueba':kek
         }
-        print(context)
-        return context
+        
+        print(s)
+        print(data)
+        return render(request,'app/index.html',data)
 
 def login(request):
     if request.method == 'POST':

@@ -1,9 +1,6 @@
 from enum import auto
-from os import error, path
+from os import path
 from tkinter.filedialog import Open
-from django import http
-from django.http import response as res
-from django.shortcuts import render
 from flask import Flask,request
 from flask_cors import CORS
 from flask_cors.core import serialize_option
@@ -11,7 +8,7 @@ import requests
 import xml.etree.ElementTree as xml
 import re
 
-from werkzeug.wrappers import response
+
 
 app = Flask(__name__) 
 #CREAMOS UNA INSTANCIA DE ESTA CLASE EL ARGUMENTO QUE SE LE PASA ES NAME POR QUE LA APP 
@@ -36,7 +33,29 @@ def procesar():
     datos2 = request.json['name']
     
     return algo
-@app.route("/envio",methods=['GET'])
+@app.route("/resumenrango",methods=['GET'])
+def resumenFechaRango():
+    ar=xml.parse('auto.xml')
+    r=ar.getroot()
+    listaFechas=[]
+    listaTotales=[]
+    for d in r.findall('AUTORIZACION'):
+        dt=d.find('FECHA').text
+        solofecha=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(dt))
+        solo=solofecha.group()
+        for dti in d.findall('LISTADO_AUTORIZACIONES'):
+            for dti2 in dti.findall('APROBACION'):
+                tt=dti2.find('TOTAL').text
+                tte=tt.strip()
+                listaTotales.append(tte)
+        listaFechas.append(solo)
+    j={
+        'FECHA':listaFechas,
+        'TOTAL':listaTotales
+    }
+    return j
+
+@app.route("/inicio/envio",methods=['GET'])
 def salida():
     archivo=open('autorizaciones.xml')
     xmltexto=archivo.read()
@@ -46,8 +65,58 @@ def salida():
     }
 
     return text
+
+def cantidadFechas():
+    contadorFechA=0
+    cont=0
+    print("aqui si entro"+str(cont))
+    archi=xml.parse('auto.xml')
+    archi2=xml.parse('auto.xml')
+    root=archi.getroot()
+    root2=archi2.getroot()
+    uno=""
+    
+    for dte in root.findall('AUTORIZACION'):
+        for tiempo in dte.findall('FECHA'):
+            fecha=tiempo.text
+            expresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fecha))
+            exp=expresion.group()
+            cont=cont+1
+    print("cantidad de fechas "+str(cont))
+    return cont
+
+def obtenerfecha(posicion):
+    contadorFechA=0
+    archi=xml.parse('auto.xml')
+    root=archi.getroot()
+    exp=""
+    for dte in root.findall('AUTORIZACION'):
+        for tiempo in dte.findall('FECHA'):
+            contadorFechA=contadorFechA+1
+            print(contadorFechA)
+            if contadorFechA==posicion:
+                fecha=tiempo.text
+                expresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fecha))
+                exp=expresion.group()
+    print("fecha obtenida"+str(exp))
+    return exp
+                
+
+@app.route("/fechas",methods=['GET'])
+def fechas():
+    fe=cantidadFechas()
+    lista = []
+    for num in range(1,cantidadFechas()+1):
+        lista.append(obtenerfecha(num))
+    conx={
+        'cantidadFechas':lista,
+    }
+    print(conx)
+    return conx
     
     
+
+
 @app.route("/proceso", methods=['POST'])
 def proceso():    
     #texto = request.data.decode('utf-8')
@@ -57,34 +126,20 @@ def proceso():
     #file.close()
     xmll=xml.parse('prueba.xml')
     xml2=xml.parse('prueba.xml')
+    xml3=xml.parse('prueba.xml')
+    xml4=xml.parse('prueba.xml')
     root1=xmll.getroot()
     root2=xml2.getroot()
+    root3=xml3.getroot()
+    root4=xml4.getroot()
     contador=0
     errorNitEmisor=0
     errorNitReceptor=0
     errorIva=0
     errortotal=0
     errorDuplicada=0
-    """for dte in root1.findall('DTE'):
-        for tiempo in dte.findall('TIEMPO'):
-            fecha=tiempo.text
-            expresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fecha))
-            exp=expresion.group()
-            print("elemento de lista "+exp)
-            for dte2 in root2.findall('DTE'):
-                for tiemp in dte2.findall('TIEMPO'):
-                    fech=tiemp.text
-                    expresion2=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fech))
-                    expresion3=expresion2.group()
-                    print("elemento de la otra lista para comparar "+expresion3)
-                    if expresion3==exp:
-                        contador=contador+1
-        print(contador)
-        contador=0"""  
-    
+    refNum=""
     raiz=xml.Element('LISTAAUTORIZACIONES')
-    #for num in range(0,3):
-        #autorizaciones=xml.SubElement(raiz,'AUTORIZACION')
     exp2=""
     for dte in root1.findall('DTE'):
         for tiempo in dte.findall('TIEMPO'):
@@ -92,16 +147,16 @@ def proceso():
             expresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fecha))
             exp=expresion.group()
             if exp!=exp2: 
-                print("elemento de lista "+exp)
+                
                 for dte2 in root2.findall('DTE'):
                     for tiemp in dte2.findall('TIEMPO'):
                         fech=tiemp.text
                         expresion2=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fech))
                         expresion3=expresion2.group()
-                        print("elemento de la otra lista para comparar "+expresion3)
+                        
                         if expresion3==exp:
                             contador=contador+1
-                print("la fecha "+str(exp)+" "+"esta "+str(contador)+" veces")
+                
                 autorizaciones=xml.SubElement(raiz,'AUTORIZACION')
                 fecha=xml.SubElement(autorizaciones,'FECHA')
                 fecha.text=str(exp)
@@ -121,11 +176,11 @@ def proceso():
                             nit=m.find('NIT_EMISOR').text
                             nitSinEspacios=nit.lstrip()
                             nitsinespacios2=nitSinEspacios.rstrip()
-                            print("este es el nit a probar "+str(nitsinespacios2))
+                            
                             longitud=len(nitsinespacios2)#OBTENGO LA LONGITUD DEL NIT
-                            print("la longitud de este nit es "+str(longitud))
+                            
                             letras=re.search(r"\D+",str(nitsinespacios2))#ver si tiene letras
-                            print("estas son las letras"+str(letras))
+                            
                             if longitud>20 or letras!=None:
                                 errorNitEmisor=errorNitEmisor+1
                                 
@@ -137,7 +192,7 @@ def proceso():
                                 eNe=str(eNe)+str(t)
                             #print(eNe)#IMPRIMO EL NIT EN SOLO NUMEROS
                 emisor.text=str(errorNitEmisor)          
-                print("cantidad de errores de nit emisor de la fecha "+str(exp)+" " +"es "+str(errorNitEmisor))
+                
                 #-------------------------------------------------------------------------------------------
                 #nitEmisor= dte.find('NIT_EMISOR').text #obtener el texto nit emisorde la etiqueta
                 #print(str(nitEmisor))
@@ -193,7 +248,7 @@ def proceso():
                                 eNe=str(eNe)+str(t)
                             #print(eNe)#IMPRIMO EL NIT EN SOLO NUMEROS
                 receptor.text=str(errorNitReceptor)          
-                print("cantidad de errores de nit emisor de la fecha "+str(exp)+" " +"es "+str(errorNitReceptor))
+                
                 #---------------------------------------------------------------------------------------------------
                 iva=xml.SubElement(errores,'IVA')
                 #metodo de encontrar errores de IVA
@@ -215,7 +270,7 @@ def proceso():
                             dato=round(vv*0.12,2)
                             
                             if dato==ii:
-                                print("son iguales")
+                                print("")
                             else:
                                 errorIva=errorIva+1
 
@@ -237,15 +292,15 @@ def proceso():
                             i=m.find('IVA').text
                             ie=i.strip()
                             ii=float(ie)#iva float
-                            print(ii)
+                            
                             vv=float(v)#valor float
-                            print(vv)
+                            
                             tt=float(totall)#total float
-                            print(tt)
+                            
                             dato=vv+ii
-                            print(dato)
+                            
                             if round(dato,2)==round(tt,2):
-                                print("son iguales los totales")
+                                print("")
                             else:
                                 errortotal=errortotal+1
 
@@ -253,69 +308,62 @@ def proceso():
                 #-------------------------------------------------------------------------------------------
                 duplicada=xml.SubElement(errores,'REFERENCIA_DUPLICADA')
                 #metodo de encontrar errores de referencia duplicadas
-                """
-                for m in root1.findall('DTE'):
-                    for nn in m.findall('TIEMPO'):
-                        fAcomparar=nn.text
-                        fExpresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(fAcomparar))
-                        fgroup=fExpresion.group()
-                        if exp==fgroup:
-                            nit=m.find('REFERENCIA').text
-                            nitSinEspacios=nit.lstrip()
-                            nitsinespacios2=nitSinEspacios.rstrip()
-                            #print("este es el nit a probar "+str(nitsinespacios2))
-                            longitud=len(nitsinespacios2)#OBTENGO LA LONGITUD DEL NIT
-                            #print("la longitud de este nit es "+str(longitud))
-                            letras=re.search(r"\D+",str(nitsinespacios2))#ver si tiene letras
-                            
-                            if longitud>20 or letras!=None:
-                                errorNitReceptor=errorNitReceptor+1
-                                
-                            
-                            expresionNitE=re.findall(r"[0-9]+",str(nit))#obtener solo los numero del nit
-                            eNe=""
-                            for n in range(0,len(expresionNitE)):
-                                t=expresionNitE[n]
-                                eNe=str(eNe)+str(t)
-                            #print(eNe)#IMPRIMO EL NIT EN SOLO NUMEROS
-                       
-                print("cantidad de errores de nit emisor de la fecha "+str(exp)+" " +"es "+str(errorNitReceptor))
+                
+                
+                print("FECHA "+ str(exp))
+                cout=""
+                refNum
+                for c in root3.findall('DTE'):
+                    for q in c.findall('TIEMPO'):
+                        qq=q.text
+                        fExpresion=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(qq))
+                        g=fExpresion.group()#fecha para comparar
+                        if g==exp:#si fecha de primera lista es igual a la de la segunda
+                            w=c.find('REFERENCIA').text
+                            ww=w.strip()#referencia
+                            if ww!=cout:
+                                print("R1 "+ww)
+                                for dte3 in root4.findall('DTE'):
+                                    tiempo = dte3.find('TIEMPO').text
+                                    fExpresio=re.search(r"[0-9]+/[0-9]+/[0-9]+",str(tiempo))
+                                    referencia=fExpresio.group()#fecha
+                                    o=dte3.find('REFERENCIA').text
+                                    refsinEspacios=o.strip()#referencia
+                                    print(refsinEspacios)
+                                    if exp==referencia and ww==refsinEspacios:
+                                        errorDuplicada=errorDuplicada+1
+                                    refNum=refsinEspacios 
+                        cout=ww
+                                        
                 duplicada.text=str(errorDuplicada)
-                """
+                #autorizaciones=xml.SubElement(raiz,'AUTORIZACION')
+                #fecha=xml.SubElement(autorizaciones,'FECHA')
+                #fecha.text=str(exp)
+                #facturas=xml.SubElement(autorizaciones,'FACTURAS_RECIBIDAS')
+                #facturas.text=str(contador)
+                #print("la fecha "+str(exp333)+" "+"esta "+str(contador)+" veces")
                 #-------------------------------------------------------------------------------------------
-                FacCorrectas= xml.SubElement(autorizaciones,'FACTURAS_CORRECTAS')
-                CanEmisores=xml.SubElement(autorizaciones,'CANTIDAD_EMISORES')
-                CanReceptores=xml.SubElement(autorizaciones,'CANTIDAD_RECEPTORES')
-                ListadoAuto=xml.SubElement(autorizaciones,'LISTADO_AUTORIZACIONES')
-                Aprobacion=xml.SubElement(ListadoAuto,'APROBACION')
-                print(str(contador))
+                #FacCorrectas= xml.SubElement(autorizaciones,'FACTURAS_CORRECTAS')
+                #CanEmisores=xml.SubElement(autorizaciones,'CANTIDAD_EMISORES')
+                #CanReceptores=xml.SubElement(autorizaciones,'CANTIDAD_RECEPTORES')
+                #ListadoAuto=xml.SubElement(autorizaciones,'LISTADO_AUTORIZACIONES')
+                #Aprobacion=xml.SubElement(ListadoAuto,'APROBACION')
+                
                 contador=0
                 errorNitEmisor=0
                 errorNitReceptor=0
                 errorIva=0
                 errortotal=0
-                errorDuplicada=0
+                
                 
             exp2=exp
-            
-    """errores=xml.SubElement(autorizaciones,'ERRORES')
-    for emi in root1.findall('DTE'):
-        for emi2 in emi.findall("NIT_EMISOR"):
-            dteee=emi2.text
-            longitud=len(dteee)
-            expresionNitEmisor=re.search(r"[0-9]+",str(dteee))
-            tieneLetras=re.search(r"\D+",str(dteee))
-            if len(expresionNitEmisor.group())>20 or len(tieneLetras.group())>0:
-                errorNitEmisor=errorNitEmisor+1
-        errorn=xml.SubElement(errores,'NIT_EMISOR')
-        errorn.text=str(errorNitEmisor)
-    """      
+                 
     myraiz=xml.ElementTree(raiz)
     myraiz.write('autorizaciones.xml')
     file=open('autorizaciones.xml')
     file.close()
     algo={
-        'hola':"hola"
+        'mensaje':"archivo de entrada procesado"
     }
     return algo
 
