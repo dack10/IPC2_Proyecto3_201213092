@@ -2,7 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.http import HttpRequest
 import requests
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 from tkinter import filedialog
 import xml.etree.ElementTree as xml
