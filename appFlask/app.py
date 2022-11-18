@@ -7,6 +7,7 @@ from flask_cors.core import serialize_option
 import requests
 import xml.etree.ElementTree as xml
 import re
+from xml.dom import minidom
 
 
 
@@ -362,6 +363,7 @@ def proceso():
     myraiz.write('autorizaciones.xml')
     file=open('autorizaciones.xml')
     file.close()
+    
     algo={
         'mensaje':"archivo de entrada procesado"
     }
